@@ -17,7 +17,14 @@ type Income struct {
 type IncomeResource struct{}
 
 func (rs IncomeResource) Routes(e *echo.Echo) {
+	e.GET("/income", listIncome)
 	e.POST("/income", createIncome)
+}
+
+func listIncome(c echo.Context) error {
+	incomes := new([]Income)
+	DB.Table("incomes").Find(&incomes)
+	return c.JSON(http.StatusOK, incomes)
 }
 
 func createIncome(c echo.Context) error {
@@ -32,10 +39,9 @@ func createIncome(c echo.Context) error {
 		return err
 	}
 
-	incomeAlreadyExists := new(Income)
-	DB.Where("description = ?", income.Description).First(&incomeAlreadyExists)
+	incomeAlreadyExists := DB.Where("description = ?", income.Description).First(&Income{})
 
-	if incomeAlreadyExists != nil {
+	if incomeAlreadyExists.Error == nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Income already exists")
 	}
 

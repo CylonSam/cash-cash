@@ -22,7 +22,7 @@ func main() {
 	internal.ConnectToDatabase()
 
 	e := echo.New()
-  e.Validator = &RequestValidator{validator: validator.New()}
+	e.Validator = &RequestValidator{validator: validator.New()}
 	internal.IncomeResource{}.Routes(e)
 	e.Logger.Fatal(e.Start(":1323"))
 }

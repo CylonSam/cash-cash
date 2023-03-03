@@ -17,28 +17,28 @@ type Income struct {
 type IncomeResource struct{}
 
 func (rs IncomeResource) Routes(e *echo.Echo) {
-	e.GET("/income", listIncome)
-  e.GET("/income/:id", getIncome)
+	e.GET("/income", listOutcome)
+	e.GET("/income/:id", getIncome)
 	e.POST("/income", createIncome)
-  e.PUT("/income/:id", updateIncome)
-  e.DELETE("/income/:id", deleteIncome)
+	e.PUT("/income/:id", updateIncome)
+	e.DELETE("/income/:id", deleteIncome)
 }
 
 func getIncome(c echo.Context) error {
-  ID := c.Param("id")
-  income := new(Income)
-  result := DB.First(&income, ID)
-  if result.Error != nil {
-    return echo.NewHTTPError(http.StatusBadRequest, "Income doesn't exist")
-  }
+	ID := c.Param("id")
+	income := new(Income)
+	result := DB.First(&income, ID)
+	if result.Error != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Income doesn't exist")
+	}
 
-  return c.JSON(http.StatusOK, income)
+	return c.JSON(http.StatusOK, income)
 }
 
-func listIncome(c echo.Context) error {
+func listOutcome(c echo.Context) error {
 	incomes := new([]Income)
 	DB.Table("incomes").Find(&incomes)
-  
+
 	return c.JSON(http.StatusOK, incomes)
 }
 
@@ -54,7 +54,10 @@ func createIncome(c echo.Context) error {
 		return err
 	}
 
-	incomeAlreadyExists := DB.Where("description = ?", income.Description).First(&Income{})
+	incomeAlreadyExists := DB.Where(
+		"description = ? AND EXTRACT(MONTH FROM date) = ?",
+		income.Description,
+		income.Date.Month()).First(&Income{})
 
 	if incomeAlreadyExists.Error == nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Income already exists")
@@ -70,34 +73,34 @@ func createIncome(c echo.Context) error {
 }
 
 func updateIncome(c echo.Context) error {
-  ID := c.Param("id")
+	ID := c.Param("id")
 
-  newIncome := new(Income)
-  existingIncome := new(Income)
+	newIncome := new(Income)
+	existingIncome := new(Income)
 
-  err := c.Bind(&newIncome)
-  if err != nil {
-    return c.String(http.StatusBadRequest, "Bad request")
-  }
+	err := c.Bind(&newIncome)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Bad request")
+	}
 
-  result := DB.First(&existingIncome, ID)
-  if result.Error != nil {
-    echo.NewHTTPError(http.StatusBadRequest, "Income doesn't exist")
-  }
+	result := DB.First(&existingIncome, ID)
+	if result.Error != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Income doesn't exist")
+	}
 
-  result = DB.Model(&existingIncome).Updates(newIncome)
-  if result.Error != nil {
-    echo.NewHTTPError(http.StatusInternalServerError, "Could not update income")
-  }
+	result = DB.Model(&existingIncome).Updates(newIncome)
+	if result.Error != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Could not update income")
+	}
 
-  return c.JSON(http.StatusNoContent, "Income updated!")
+	return c.JSON(http.StatusNoContent, "Income updated!")
 }
 
 func deleteIncome(c echo.Context) error {
-  ID := c.Param("id")
-  income := new(Income)
-  DB.First(&income, ID)
-  DB.Delete(&income)
+	ID := c.Param("id")
+	income := new(Income)
+	DB.First(&income, ID)
+	DB.Delete(&income)
 
-  return c.JSON(http.StatusOK, "Income deleted.")
+	return c.JSON(http.StatusOK, "Income deleted.")
 }

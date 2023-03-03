@@ -21,12 +21,16 @@ func (rs IncomeResource) Routes(e *echo.Echo) {
   e.GET("/income/:id", getIncome)
 	e.POST("/income", createIncome)
   e.PUT("/income/:id", updateIncome)
+  e.DELETE("/income/:id", deleteIncome)
 }
 
 func getIncome(c echo.Context) error {
   ID := c.Param("id")
   income := new(Income)
-  DB.First(&income, ID)
+  result := DB.First(&income, ID)
+  if result.Error != nil {
+    return echo.NewHTTPError(http.StatusBadRequest, "Income doesn't exist")
+  }
 
   return c.JSON(http.StatusOK, income)
 }
@@ -78,7 +82,7 @@ func updateIncome(c echo.Context) error {
 
   result := DB.First(&existingIncome, ID)
   if result.Error != nil {
-    echo.NewHTTPError(http.StatusBadRequest, "Income doesn't exists")
+    echo.NewHTTPError(http.StatusBadRequest, "Income doesn't exist")
   }
 
   result = DB.Model(&existingIncome).Updates(newIncome)
@@ -86,5 +90,14 @@ func updateIncome(c echo.Context) error {
     echo.NewHTTPError(http.StatusInternalServerError, "Could not update income")
   }
 
-  return c.JSON(http.StatusCreated, "Income updated!")
+  return c.JSON(http.StatusNoContent, "Income updated!")
+}
+
+func deleteIncome(c echo.Context) error {
+  ID := c.Param("id")
+  income := new(Income)
+  DB.First(&income, ID)
+  DB.Delete(&income)
+
+  return c.JSON(http.StatusOK, "Income deleted.")
 }

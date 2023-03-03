@@ -3,15 +3,15 @@ This project is a finance api built with :heart: and Go.
 
 ## Tools
 
-- Go
-- Echo
-- Gorm
-- Postgres
-- Docker
+- [Go](https://go.dev/)
+- [Echo](https://echo.labstack.com/)
+- [Gorm](https://gorm.io/)
+- [Postgres](https://www.postgresql.org/)
+- [Docker](https://www.docker.com/)
 
 ## Getting started
 
-1. **Setup database**
+1. **Setup the database**
     
     How: change to deployments folder and do: `docker compose up -d`
 
@@ -23,6 +23,16 @@ This project is a finance api built with :heart: and Go.
 
 <details open>
 <summary>Incomes</summary>
+
+### List all incomes
+
+**GET** /income
+
+CURL:
+
+`curl --request GET \
+--url http://localhost:1323/income`
+
 
 </details>
 

@@ -20,6 +20,7 @@ func (rs IncomeResource) Routes(e *echo.Echo) {
 	e.GET("/income", listIncome)
   e.GET("/income/:id", getIncome)
 	e.POST("/income", createIncome)
+  e.PUT("/income/:id", updateIncome)
 }
 
 func getIncome(c echo.Context) error {
@@ -61,5 +62,29 @@ func createIncome(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "oopsie!")
 	}
 
-	return c.String(http.StatusCreated, "user created!")
+	return c.String(http.StatusCreated, "Income created!")
+}
+
+func updateIncome(c echo.Context) error {
+  ID := c.Param("id")
+
+  newIncome := new(Income)
+  existingIncome := new(Income)
+
+  err := c.Bind(&newIncome)
+  if err != nil {
+    return c.String(http.StatusBadRequest, "Bad request")
+  }
+
+  result := DB.First(&existingIncome, ID)
+  if result.Error != nil {
+    echo.NewHTTPError(http.StatusBadRequest, "Income doesn't exists")
+  }
+
+  result = DB.Model(&existingIncome).Updates(newIncome)
+  if result.Error != nil {
+    echo.NewHTTPError(http.StatusInternalServerError, "Could not update income")
+  }
+
+  return c.JSON(http.StatusCreated, "Income updated!")
 }

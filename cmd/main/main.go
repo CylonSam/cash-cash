@@ -7,11 +7,11 @@ import (
 	"net/http"
 )
 
-type CustomValidator struct {
+type RequestValidator struct {
 	validator *validator.Validate
 }
 
-func (cv *CustomValidator) Validate(i interface{}) error {
+func (cv *RequestValidator) Validate(i interface{}) error {
 	if err := cv.validator.Struct(i); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -22,7 +22,7 @@ func main() {
 	internal.ConnectToDatabase()
 
 	e := echo.New()
-	e.Validator = &CustomValidator{validator: validator.New()}
+  e.Validator = &RequestValidator{validator: validator.New()}
 	internal.IncomeResource{}.Routes(e)
 	e.Logger.Fatal(e.Start(":1323"))
 }

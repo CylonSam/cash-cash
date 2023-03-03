@@ -18,12 +18,22 @@ type IncomeResource struct{}
 
 func (rs IncomeResource) Routes(e *echo.Echo) {
 	e.GET("/income", listIncome)
+  e.GET("/income/:id", getIncome)
 	e.POST("/income", createIncome)
+}
+
+func getIncome(c echo.Context) error {
+  ID := c.Param("id")
+  income := new(Income)
+  DB.First(&income, ID)
+
+  return c.JSON(http.StatusOK, income)
 }
 
 func listIncome(c echo.Context) error {
 	incomes := new([]Income)
 	DB.Table("incomes").Find(&incomes)
+  
 	return c.JSON(http.StatusOK, incomes)
 }
 
